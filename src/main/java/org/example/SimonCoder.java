@@ -1,7 +1,6 @@
 package org.example;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 
 
@@ -23,6 +22,53 @@ public class SimonCoder {
 
         public int getSize() {
             return size;
+        }
+    }
+
+    public SimonCoder(Cipher cipher) {
+        this.cipher = cipher;
+    }
+
+    public Cipher getCipher() {
+        return cipher;
+    }
+    public SimonCoder(BlockSizeBits blockSizeBits) {
+        switch (blockSizeBits) {
+            case SIMON_64 -> {
+                this.cipher = new Simon64Coder();
+            }
+            case SIMON_128 -> {
+                this.cipher = new Simon128Coder();
+            }
+            default -> throw new IllegalArgumentException("Unknown Simon block size: " + blockSizeBits.getSize());
+        }
+    }
+
+    public abstract static class Cipher {
+        protected int n;
+        protected int keyBitSize;
+        protected int rounds;
+        public int getKeyBitSize() {
+            return keyBitSize;
+        }
+        public int getRounds() {
+            return rounds;
+        }
+        protected long ROTL(long x, long r) {
+            return (x << r)%(Integer.MAX_VALUE* 2L+1) | x >>> (n-r);
+        }
+        protected long ROTR(long x,long r) {
+            return x >>> r | (x << (n-r))%(Integer.MAX_VALUE* 2L+1);
+        }
+        protected long f(long x) {
+            return ((ROTL(x,1) & ROTL(x,8)) ^ ROTL(x,2));
+        }
+        protected Pair<Long, Long> R(long x, long y, long k1, long k2) {
+            y = y^f(x);
+            y = y^k1;
+            x = x^f(y);
+            x = x^k2;
+            return new Pair<>(x, y);
         }
     }
 
@@ -79,7 +125,6 @@ public class SimonCoder {
             this.n = 32;
         }
 
-
         public List<Long> SimonKeySchedule(long A,long B, long C) {
             List<Long> keys = new ArrayList<>();
             long c=0xfffffffcL, z=0x7369f885192c0ef5L;
@@ -87,8 +132,7 @@ public class SimonCoder {
             keys.add(B);
             keys.add(C);
             for (int i=3;i<rounds;i++) {
-                float temp = (c^(z&1)^keys.get(i-3)^ROTR(keys.get(i-1),3)^ROTR(keys.get(i-1),4))%Integer.MAX_VALUE;
-                keys.add((long)temp);
+                keys.add(c^(z&1)^keys.get(i-3)^ROTR(keys.get(i-1),3)^ROTR(keys.get(i-1),4));
                 z>>=1;
             }
             return keys;
@@ -101,9 +145,6 @@ public class SimonCoder {
                 Pair<Long, Long> layerOut = R(Out2, Out1, Kr.get(i), Kr.get(i+1));
                 Out2 = layerOut.getFirst();
                 Out1 = layerOut.getSecond();
-                if (Out1<0 || Out2<0) {
-                    System.out.println("ha");
-                }
             }
             return new Pair<>(Out1, Out2);
         }
@@ -111,63 +152,17 @@ public class SimonCoder {
         public Pair<Long, Long> SimonDecrypt(long A, long B, List<Long> Kr)
         {
             int i;
-            long Out1 = A, Out2 = B;
+            long Out1 = B, Out2 = A;
             for(i=rounds-1;i>=0;i-=2) {
+                System.out.println("Out2: " + Out2 + "     Out1: " + Out1);
                 Pair<Long, Long> layerOut = R(Out1,Out2,Kr.get(i),Kr.get(i-1));
-                Out2 = layerOut.getFirst();
-                Out1 = layerOut.getSecond();
+                Out1 = layerOut.getFirst();
+                Out2 = layerOut.getSecond();
+
             }
             return new Pair<>(Out1, Out2);
         }
     }
-
-    public SimonCoder(Cipher cipher) {
-        this.cipher = cipher;
-    }
-
-    public Cipher getCipher() {
-        return cipher;
-    }
-    public SimonCoder(BlockSizeBits blockSizeBits) {
-        switch (blockSizeBits) {
-            case SIMON_64 -> {
-                this.cipher = new Simon64Coder();
-            }
-            case SIMON_128 -> {
-                this.cipher = new Simon128Coder();
-            }
-            default -> throw new IllegalArgumentException("Unknown Simon block size: " + blockSizeBits.getSize());
-        }
-    }
-
-    public abstract static class Cipher {
-        protected int n;
-        protected int keyBitSize;
-        protected int rounds;
-        public int getKeyBitSize() {
-            return keyBitSize;
-        }
-        public int getRounds() {
-            return rounds;
-        }
-        protected long ROTL(long x, long r) {
-            return x << r | x >> (n-r);
-        }
-        protected long ROTR(long x,long r) {
-            return x >>> r | x << (n-r);
-        }
-        protected long f(long x) {
-            return ((ROTL(x,1) & ROTL(x,8)) ^ ROTL(x,2));
-        }
-        protected Pair<Long, Long> R(long x, long y, long k1, long k2) {
-            y = (y^f(y))%Integer.MAX_VALUE;
-            y = y^k1%Integer.MAX_VALUE;
-            x = x^f(y)%Integer.MAX_VALUE;
-            x = x^k2%Integer.MAX_VALUE;
-            return new Pair<>(x, y);
-        }
-    }
-
 
 
 }

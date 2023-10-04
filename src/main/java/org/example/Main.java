@@ -1,7 +1,6 @@
 package org.example;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -74,15 +73,16 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        List<Integer> pt32 = List.of(99, 108, 105, 110, 103, 32, 114, 111);
-        List<Integer> k32 = List.of(0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19);
-        List<Long> pt = BytesToWords32(pt32); //6f722067,6e696c63
-        List<Long> K = BytesToWords32(k32); //13121110,0b0a0908,03020100
+        List<Integer> pt32 = List.of(0x65, 0x61, 0x6e, 0x73, 0x20, 0x46, 0x61, 0x74);
+        List<Integer> k32 = List.of(0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b, 0x10, 0x11, 0x12, 0x13);
+        List<Long> pt = BytesToWords32(pt32);
+        List<Long> K = BytesToWords32(k32);
+        System.out.println(pt);
         SimonCoder.Simon64Coder coder = new SimonCoder.Simon64Coder();
         List<Long> keys = coder.SimonKeySchedule(K.get(0), K.get(1), K.get(2));
-        Pair<Long, Long> encrypt = coder.SimonEncrypt(pt.get(1), pt.get(0), keys);
-        Pair<Long, Long> decrypt = coder.SimonDecrypt( encrypt.getFirst(),encrypt.getSecond(), keys);
-        System.out.println(Words32ToBytes(List.of( encrypt.getSecond(), decrypt.getFirst())));
+        Pair<Long, Long> encrypt = coder.SimonEncrypt(pt.get(0), pt.get(1), keys);
+        Pair<Long, Long> decrypt = coder.SimonDecrypt(encrypt.getSecond(),encrypt.getFirst(), keys);
+        System.out.println(decrypt.getFirst()+" "+ decrypt.getSecond());
 
 
         /*List<Integer> pt64 = List.of(32, 116, 114, 97, 118, 101, 108, 108, 101, 114, 115, 32, 100, 101, 115, 99);
