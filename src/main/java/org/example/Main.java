@@ -19,11 +19,11 @@ public class Main {
             j+=4;
         }
         if (bytes.size()%4 != 0){
-            j = bytes.size()-bytes.size()%4;
+            j = bytes.size()-1;
             long last = (long) bytes.get(j) << 24;
             int shift = 16;
             for (i=1; i < 4; i++) {
-                int value = i<bytes.size()%4? bytes.get(j+i): 0;
+                int value = i<bytes.size()%4? bytes.get(j-i): 0;
                 last |= ((long) value << shift);
                 shift-=8;
             }
@@ -71,7 +71,7 @@ public class Main {
         });
         return builder.toString();
     }
-
+//the ships were tacking tacking but not melting
     public static void Siman64Test(String text) {
         List<Long> pt = BytesToWords32(toIntArr(text));
         List<Long> K = BytesToWords32(toIntArr("codePhrase11"));
