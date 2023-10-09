@@ -76,6 +76,13 @@ public class SimonCoder {
             return keys;
         }
 
+        /**
+         * Метод кодирует блоки
+         * @param A Первый блок
+         * @param B Второй блок
+         * @param Kr ключи
+         * @return закодированная пара длоков
+         */
         @Override
         public Pair<Long, Long> SimonEncrypt(long A, long B, List<Long> Kr)
         {
@@ -88,6 +95,13 @@ public class SimonCoder {
             return new Pair<>(Out1, Out2);
         }
 
+        /**
+         * Метод декодирует блоки
+         * @param A Первый блок
+         * @param B Второй блок
+         * @param Kr ключи
+         * @return декодированная пара длоков
+         */
         @Override
         public Pair<Long, Long> SimonDecrypt(long A, long B, List<Long> Kr)
         {

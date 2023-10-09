@@ -20,8 +20,8 @@ public class MD5 {
     private int ATemp, BTemp, CTemp, DTemp;
 
     /*
-     * Постоянный ti
-     * Формула: пол (abs (sin (i + 1)) × (2pow32)
+     * Постоянный ki
+     * floor(2^32 × abs (sin(i + 1)))
      */
     private final static int[] K = {
             0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
@@ -45,10 +45,6 @@ public class MD5 {
             4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 6, 10,
             15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
 
-
-    /*
-     * Функция инициализации
-     */
     private void init() {
         ATemp = A;
         BTemp = B;
@@ -60,9 +56,6 @@ public class MD5 {
         return (a << s) | (a >>> (32 - s));
     }
 
-    /*
-     * Основной цикл
-     */
     private void MainLoop(int[] M) {
         int F, g;
         int a = ATemp;
@@ -96,12 +89,7 @@ public class MD5 {
 
     }
 
-    /*
-     * Функция заполнения
-     * После обработки биты 448 (mod512) должны быть удовлетворены, а байт - байты 56 (mode64)
-     * Метод заполнения состоит в том, чтобы сначала добавить 1, а к остальным битам добавить 0
-     * Наконец, добавьте исходную длину в 64 бита
-     */
+
     private int[] add(String str) {
         int num = ((str.length() + 8) / 64) + 1; // С 512 битами, 64 байта как группа
         int[] strByte = new int[num * 16]; // 64/4 = 16, то есть 16 целых чисел
@@ -113,16 +101,11 @@ public class MD5 {
             strByte[i >> 2] |= str.charAt(i) << ((i % 4) * 8); // Целое число хранит четыре байта, с прямым порядком байтов
         }
         strByte[i >> 2] |= 0x80 << ((i % 4) * 8); // Добавляем 1 в конец
-        /*
-         * Добавьте исходную длину, длина относится к длине бита, поэтому ее нужно умножить на 8, а затем она будет с прямым порядком байтов, поэтому она помещается в предпоследнюю, здесь длина всего 32 бита
-         */
         strByte[num * 16 - 2] = str.length() * 8;
         return strByte;
     }
 
-    /*
-     * Функции вызова
-     */
+
     public String getMD5(String source) {
         init();
         int[] strByte = add(source);
@@ -135,13 +118,12 @@ public class MD5 {
     }
 
     /*
-     * Целое число становится шестнадцатеричной строкой
+     * число в шестнадцатеричную строку
      */
     private String changeHex(int a) {
         StringBuilder str = new StringBuilder();
         for (int i = 0; i < 4; i++) {
             str.append(String.format("%2s", Integer.toHexString(((a >> i * 8) % (1 << 8)) & 0xff)).replace(' ', '0'));
-
         }
         return str.toString();
     }
