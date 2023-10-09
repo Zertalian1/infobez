@@ -1,8 +1,8 @@
 package org.example;
 
 public class Pair<T, T1> {
-    private T first;
-    private  T1 second;
+    private final T first;
+    private final T1 second;
 
     public Pair(T first, T1 second) {
         this.first = first;
